@@ -1,0 +1,21 @@
+services:
+
+  bloo-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    image: bloo-agent-server
+    container_name: bloo-agent-server
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  client-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    image: client-agent
+    container_name: client-agent
+    ports:
+      - "8081:80"
+    restart: unless-stopped
