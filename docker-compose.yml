@@ -16,6 +16,15 @@ services:
       dockerfile: Dockerfile.client
     image: client-agent
     container_name: client-agent
+    volumes:
+      - ./client:/app/client
+    environment:
+      - EXTERNAL_AGENT_URLS=http://host.docker.internal:9999,http://host.docker.internal:9998
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    env_file:
+      - .env
     ports:
       - "8081:80"
     restart: unless-stopped

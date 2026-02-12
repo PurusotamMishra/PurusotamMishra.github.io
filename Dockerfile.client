@@ -23,13 +23,14 @@ RUN pip3 install --upgrade pip
 RUN mkdir /app/logs
 
 # Copy setup files
-COPY setup/requirements.txt /opt/requirements.txt
+COPY client/setup/requirements.txt /opt/requirements.txt
 
 RUN pip3 install --no-cache-dir -r /opt/requirements.txt
 
 # Moving common directories
-COPY app /app
+COPY client /app/client
 
 EXPOSE 80
 
-ENTRYPOINT ["exec", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+# CMD ["python", "client/run.py"]
+CMD ["sh", "-c", "cd /app/client && python run.py"]

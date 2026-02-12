@@ -38,3 +38,7 @@ class RemoteAgentConnections:
         self, message_request: SendMessageRequest
     ) -> SendMessageResponse:
         return await self.agent_client.send_message(message_request)
+    
+    async def close(self):
+        """Properly close the httpx client."""
+        await self._httpx_client.aclose()

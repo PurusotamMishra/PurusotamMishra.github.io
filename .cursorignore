@@ -1,0 +1,144 @@
+# ===============================
+# Python
+# ===============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+.build/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python tooling
+.mypy_cache/
+.pytest_cache/
+.pyre/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.prof
+
+# ===============================
+# FastAPI / Uvicorn / Gunicorn
+# ===============================
+*.log
+logs/
+uvicorn.log
+gunicorn.log
+
+# Runtime files
+*.pid
+*.sock
+
+# ===============================
+# Databases
+# ===============================
+
+# PostgreSQL
+*.sql
+*.dump
+*.backup
+
+# MongoDB
+*.bson
+*.lock
+dump/
+mongodb-data/
+
+# Redis
+dump.rdb
+
+# ===============================
+# Environment & Secrets
+# ===============================
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+*.pfx
+
+# ===============================
+# Docker / Containers
+# ===============================
+.dockerignore
+docker-compose.override.yml
+docker-compose.*.yml
+*.docker.env
+
+# ===============================
+# Celery / Background workers
+# ===============================
+celerybeat-schedule
+celerybeat.pid
+
+# ===============================
+# Cache / Temp
+# ===============================
+.cache/
+tmp/
+temp/
+*.tmp
+
+# ===============================
+# OS / Editor
+# ===============================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ===============================
+# Node (if admin UI / tooling exists)
+# ===============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ===============================
+# Tests artifacts
+# ===============================
+test-results/
+junit.xml
+reports/
+
+# ===============================
+# Data / Uploads
+# ===============================
+uploads/
+media/
+staticfiles/
+
+# ===============================
+# API Docs & Generated Files
+# ===============================
+openapi.json
+swagger.json
+
+# ===============================
+# Terraform / Infra (if present)
+# ===============================
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# ===============================
+# Misc
+# ===============================
+*.bak
+*.old
+*.orig
