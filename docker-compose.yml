@@ -4,11 +4,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.server
-    image: bloo-agent-server
-    container_name: bloo-agent-server
+    image: bloo-agent
+    container_name: bloo-agent
+    env_file:
+      - .env
     ports:
-      - "8080:80"
+      - "8080:8080"
     restart: unless-stopped
+    networks:
+      - agent-network
 
   client-agent:
     build:
@@ -19,7 +23,7 @@ services:
     volumes:
       - ./client:/app/client
     environment:
-      - EXTERNAL_AGENT_URLS=http://host.docker.internal:9999,http://host.docker.internal:9998
+      - EXTERNAL_AGENT_URLS=http://bloo-agent:8080
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
@@ -28,3 +32,9 @@ services:
     ports:
       - "8081:80"
     restart: unless-stopped
+    networks:
+      - agent-network
+
+networks:
+  agent-network:
+    driver: bridge

@@ -27,6 +27,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.adk.tools.tool_context import ToolContext
 
+import logging
 from .remote_agent_connection import RemoteAgentConnections
 
 load_dotenv()
@@ -120,24 +121,28 @@ class HostAgent:
     async def _async_init_components(self, remote_agent_addresses: List[str]):
         async with httpx.AsyncClient(timeout=30) as client:
             for address in remote_agent_addresses:
-                card_resolver = A2ACardResolver(client, address)
+                card_resolver = A2ACardResolver(client, base_url=address)
                 try:
+                    logging.error(f"address: {address}")
                     card = await card_resolver.get_agent_card()
+                    logging.error(f"card: {str(card)}")
+                    logging.error(f"address: {address}")
                     remote_connection = RemoteAgentConnections(
                         agent_card=card, agent_url=address
                     )
                     self.remote_agent_connections[card.name] = remote_connection
+                    logging.error(f"remote_connection: {remote_connection}")
                     self.cards[card.name] = card
                 except httpx.ConnectError as e:
-                    print(f"ERROR: Failed to get agent card from {address}: {e}")
+                    logging.error(f"ERROR: Failed to get agent card from {address}: {e}")
                 except Exception as e:
-                    print(f"ERROR: Failed to initialize connection for {address}: {e}")
+                    logging.error(f"ERROR: Failed to initialize connection for {address}: {e}")
 
         agent_info = [
             json.dumps({"name": card.name, "description": card.description})
             for card in self.cards.values()
         ]
-        print("agent_info:", agent_info)
+        logging.error(f"agent_info:{agent_info}")
         self.agents = "\n".join(agent_info) if agent_info else "No friends found"
 
     @classmethod
@@ -268,7 +273,9 @@ class HostAgent:
             user_id=self._user_id,
             session_id=session_id,
         )
+        # logging.error(f"query: {self.remote_agent_connections}")
         content = types.Content(role="user", parts=[types.Part.from_text(text=query)])
+        logging.error(f"session: {session}")
         if session is None:
             session = await self._runner.session_service.create_session(
                 app_name=self._agent.name,

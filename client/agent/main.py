@@ -6,7 +6,7 @@ from typing import List, Optional
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
+import logging
 from agent.agent import HostAgent
 
 def _parse_external_agent_urls(raw: str | None) -> List[str]:
@@ -41,6 +41,7 @@ async def lifespan(app: FastAPI):
     load_dotenv()
 
     urls = _parse_external_agent_urls(os.getenv("EXTERNAL_AGENT_URLS"))
+    logging.error(f"urls: {urls}")
     if not urls:
         raise RuntimeError(
             'Missing EXTERNAL_AGENT_URLS (e.g. "http://localhost:9999,http://localhost:9998")'

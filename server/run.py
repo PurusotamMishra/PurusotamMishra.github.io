@@ -1,89 +1,94 @@
-# from contextlib import asynccontextmanager
-# from fastapi.responses import JSONResponse
-# from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
-from fastapi import FastAPI, HTTPException
 import logging
-from pydantic import BaseModel
+import os
 
-from app.core.exceptions import BaseAppException
-from app.agent.mcp_client import MCPClient
+import uvicorn
+from a2a.server.apps import A2AStarletteApplication
+from a2a.server.request_handlers import DefaultRequestHandler
+from a2a.server.tasks import InMemoryTaskStore
+from a2a.types import (
+    AgentCapabilities,
+    AgentCard,
+    AgentSkill,
+)
+import sys  
+sys.path.append("/app/server")
+from agent.agent import create_agent
+from agent.agent_executer import BLOOAgentExecutor
+from google.adk.artifacts import InMemoryArtifactService
+from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# logger = get_logger(level="INFO", name=__name__)
+class MissingAPIKeyError(Exception):
+    """Exception for missing API key."""
 
-# @asynccontextmanager
-# async def lifespan(app: FastAPI):
-#     try:
-#         get_mongo_client()
-#         pg_client = PostgresHelper()
-#         yield
-#     finally:
-#         mongo_client = get_mongo_client()
-#         mongo_client.close()
-#         pg_client.close()
-#         logger.info("MongoDB client closed")
-        
-
-app = FastAPI(
-    title="Application API",
-    description="API endpoints for Application",
-    openapi_url="/ueba/api/openapi.json",
-    docs_url="/ueba/api/docs",  # Custom Swagger URL
-    # lifespan=lifespan, 
-)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
-)
-
-# @app.exception_handler(APIException)
-# async def global_exception_handler(_: Request, exc: APIException):
-#     return JSONResponse(
-#         status_code=exc.status_code,
-#         content={"name": exc.name, "message": exc.message, "status": exc.status, "result": exc.result}
-#     )
+    pass
 
 
-class QueryRequest(BaseModel):
-    """Request model for agent queries."""
-    query: str
-    # server_name: Optional[str] = "mitre_attack"
-
-
-class QueryResponse(BaseModel):
-    """Response model for agent queries."""
-    result: str
-    message: str
-
-@app.post("/bloo/agent", response_model=QueryResponse)
-async def query_agent(request: QueryRequest):
-    """
-    Send a query to the MCP-powered agent.
-    
-    The agent will connect to the specified MCP server and use available tools
-    to answer the query.
-    """
+def main():
+    """Starts the agent server."""
+    HOST_DOMAIN = "bloo-agent"
+    HOST_PORT = 8080
     try:
-        logger.info(f"Received query: {request.query[:100]}...")
-        
-        mcp_client = MCPClient()
-        response = await mcp_client.query(request.query)
-        
-        return QueryResponse(
-            result=response,
-            message="Query processed successfully"
+        # Check for API key only if Vertex AI is not configured
+        if not os.getenv("GOOGLE_GENAI_USE_VERTEXAI") == "TRUE": # TODO: Replace with the correct environment variable
+            if not os.getenv("GOOGLE_API_KEY"): # TODO
+                raise MissingAPIKeyError(
+                    "GOOGLE_API_KEY environment variable not set and GOOGLE_GENAI_USE_VERTEXAI is not TRUE."
+                )
+
+        capabilities = AgentCapabilities(streaming=True)
+
+        skill = AgentSkill(
+            id="fetch_logs",
+            name="Logs Fetching Agent",
+            description="This agent fetches logs from the database based on the user's request.",
+            tags=["logs", "database"],
+            examples=["Fetch logs from the database for the last 24 hours", 
+            "Fetch the top suspect users performed DDOS in last 3 days"],
         )
+
+        agent_card = AgentCard(
+            name="BLOO Agent",
+            description="An agent that fetches logs from the database based on the user's request.",
+            url=f"http://{HOST_DOMAIN}:{HOST_PORT}/",
+            version="1.0.0",
+            defaultInputModes=["text/plain"],
+            defaultOutputModes=["text/plain"],
+            capabilities=capabilities,
+            skills=[skill],
+        )
+
+        adk_agent = create_agent()
         
-    except BaseAppException as e:
-        logger.error(f"Agent error: {e.message}")
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        runner = Runner(
+            app_name=agent_card.name,
+            agent=adk_agent,
+            artifact_service=InMemoryArtifactService(),
+            session_service=InMemorySessionService(),
+            memory_service=InMemoryMemoryService(),
+        )
+        agent_executor = BLOOAgentExecutor(runner)
+
+        request_handler = DefaultRequestHandler(
+            agent_executor=agent_executor,
+            task_store=InMemoryTaskStore(),
+        )
+        server = A2AStarletteApplication(
+            agent_card=agent_card, http_handler=request_handler
+        )
+
+        uvicorn.run(server.build(), host="0.0.0.0", port=HOST_PORT)
+    except MissingAPIKeyError as e:
+        logger.error(f"Error: {e}")
+        exit(1)
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"An error occurred during server startup: {e}")
+        exit(1)
+
+
+if __name__ == "__main__":
+    main()
