@@ -8,6 +8,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import logging
 from agent.agent import HostAgent
+from test_client import main
+
 
 def _parse_external_agent_urls(raw: str | None) -> List[str]:
     if not raw:
@@ -79,3 +81,13 @@ async def chat(req: ChatRequest):
             final_text = event.get("content", "") or ""
 
     return ChatResponse(session_id=session_id, result=final_text)
+    
+@app.post("/test-client", response_model=ChatResponse)
+async def send_message(req: ChatRequest):
+    session_id = req.session_id or str(uuid.uuid4())
+    response = await main(base_url="http://bloo-agent:8080", public_agent_card_path="/.well-known/agent-card.json")
+
+    return ChatResponse(
+        session_id=session_id,
+        result=response.model_dump_json(indent=2, exclude_none=True),
+    )

@@ -15,6 +15,10 @@ from a2a.types import (
     SendMessageResponse,
     SendMessageSuccessResponse,
     Task,
+    Message,
+    Part,
+    Role,
+    TextPart,
 )
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -54,7 +58,7 @@ class LLMConfig:
         },
         "anthropic": {
             "env_key": "ANTHROPIC_API_KEY",
-            "model": "anthropic/claude-3-haiku-20240307",  # LiteLLM format for Anthropic
+            "model": "anthropic/claude-4.5-sonnet",  # LiteLLM format for Anthropic
             "display_name": "Anthropic Claude",
         },
     }
@@ -94,6 +98,7 @@ class LLMConfig:
             os.environ["OPENAI_API_KEY"] = self.api_key
         elif self.provider == "anthropic":
             os.environ["ANTHROPIC_API_KEY"] = self.api_key
+        logging.error(f"provider: {self.provider}")
 
 
 # Initialize LLM configuration
@@ -181,12 +186,13 @@ class HostAgent:
         - OpenAI: "openai/gpt-4o"  
         - Anthropic: "anthropic/claude-3-haiku-20240307"
         """
-        tools = [self.check_available_agents]
+        tools = [self.check_available_agents, self.send_message]
         
-        if self.has_external_agents():
-            tools.append(self.send_message)
+        # if self.has_external_agents():
+        #     tools.append(self.send_message)
             
-        print(f"Creating agent with provider: {llm_config.provider}, model: {llm_config.model}")
+        logging.error(f"Creating agent with provider: {llm_config.provider}, model: {llm_config.model}")
+        logging.error(f"tools: {tools}")
         
         return Agent(
             model=llm_config.model,
@@ -228,15 +234,20 @@ class HostAgent:
         
         if has_agents:
             return f"""
-                **Role:** You are the Host Agent, you analyse logs based on the user's request. 
-                To fetch logs you can call External Agents using the `send_message` tool. 
-                Once the logs are fetched, you should analyse them and provide the user with a summary of the logs.
+                **Role:** You are a routing-only Host Agent.
 
-                **Core Directives:**
-                * Use `check_available_agents` to see which external agents are connected.
-                * Use `send_message` to delegate tasks to external agents.
-                * Analyze responses from external agents and provide clear summaries to the user.
-                * Be concise and use bullet points for readability.
+                **Hard Rules (must follow):**
+                - You MUST NOT answer the user directly.
+                - You MUST delegate the user's request to an external agent using the `send_message` tool.
+                - You MUST call `check_available_agents` first, then select the agent name from that result.
+                - Prefer delegating to **"BLOO Agent"** if it exists in the available agents list; otherwise use the first available agent.
+                - Your final response to the user MUST be only the external agent's response (no extra analysis, no rewriting).
+
+                **Delegation format:**
+                - Call `send_message(agent_name="<chosen agent name>", task="<user query verbatim>")`
+
+                **If delegation fails:**
+                - Reply only: "FAILED_TO_DELEGATE_TO_EXTERNAL_AGENT"
 
                 **Today's Date (YYYY-MM-DD):** {datetime.now().strftime("%Y-%m-%d")}
 
@@ -268,6 +279,8 @@ class HostAgent:
         """
         Streams the agent's response to a given query.
         """
+        logging.error(f"query: {query}")
+        # logging.error(f"self._runner: {self._runner} ==> {self._user_id}")
         session = await self._runner.session_service.get_session(
             app_name=self._agent.name,
             user_id=self._user_id,
@@ -275,7 +288,7 @@ class HostAgent:
         )
         # logging.error(f"query: {self.remote_agent_connections}")
         content = types.Content(role="user", parts=[types.Part.from_text(text=query)])
-        logging.error(f"session: {session}")
+        logging.error(f"session before: {session}")
         if session is None:
             session = await self._runner.session_service.create_session(
                 app_name=self._agent.name,
@@ -283,6 +296,7 @@ class HostAgent:
                 state={},
                 session_id=session_id,
             )
+        logging.error(f"session after: {session}")
         async for event in self._runner.run_async(
             user_id=self._user_id, session_id=session.id, new_message=content
         ):
@@ -350,28 +364,29 @@ class HostAgent:
         task_id = state.get("task_id", str(uuid.uuid4()))
         context_id = state.get("context_id", str(uuid.uuid4()))
         message_id = str(uuid.uuid4())
-
-        payload = {
-            "message": {
-                "role": "user",
-                "parts": [{"type": "text", "text": task}],
-                "messageId": message_id,
-                "taskId": task_id,
-                "contextId": context_id,
-            },
-        }
-
-        message_request = SendMessageRequest(
-            id=message_id, params=MessageSendParams.model_validate(payload)
+        
+        payload = Message(
+            role=Role.user,
+            messageId=message_id,
+            parts=[Part(root=TextPart(text=task))],
         )
+        
+        logging.error(f"payload: {payload}")
+        
+        try:
+            message_request = SendMessageRequest(
+                id=message_id, params=MessageSendParams(message=payload)
+            )
 
-        send_response: SendMessageResponse = await client.send_message(message_request)
-        print("send_response", send_response)
+            send_response: SendMessageResponse = await client.send_message(message_request)
+            logging.error("send_response", send_response)
+        except Exception as e:
+            logging.error(f"Error sending message: {e}")
 
         if not isinstance(
             send_response.root, SendMessageSuccessResponse
         ) or not isinstance(send_response.root.result, Task):
-            print("Received a non-success or non-task response. Cannot proceed.")
+            logging.error("Received a non-success or non-task response. Cannot proceed.")
             return
 
         response_content = send_response.root.model_dump_json(exclude_none=True)

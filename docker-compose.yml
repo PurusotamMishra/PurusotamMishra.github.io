@@ -25,6 +25,7 @@ services:
     environment:
       - EXTERNAL_AGENT_URLS=http://bloo-agent:8080
       - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - GOOGLE_GENAI_USE_VERTEXAI=FALSE
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
     env_file:
@@ -32,6 +33,8 @@ services:
     ports:
       - "8081:80"
     restart: unless-stopped
+    depends_on:
+      - bloo-agent
     networks:
       - agent-network
 
