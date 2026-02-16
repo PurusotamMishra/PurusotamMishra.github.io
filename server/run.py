@@ -12,6 +12,7 @@ from a2a.types import (
 )
 import sys  
 sys.path.append("/app/server")
+# from agent.agent import FetchLogsAgent
 from agent.agent import create_agent
 from agent.agent_executer import BLOOAgentExecutor
 from google.adk.artifacts import InMemoryArtifactService
@@ -62,6 +63,7 @@ def main():
             skills=[skill],
         )
 
+        # adk_agent = FetchLogsAgent()
         adk_agent = create_agent()
         
         runner = Runner(

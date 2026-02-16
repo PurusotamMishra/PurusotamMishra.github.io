@@ -1,6 +1,7 @@
 """
 Pydantic models and schemas for the DQL Agent System (LangGraph version).
 """
+from typing import Any
 from pydantic import BaseModel
 
 
@@ -64,4 +65,9 @@ class QueryClarityOutput(BaseModel):
     score: float  # Overall confidence score (0.0-1.0)
     reasoning: str  # Explanation of the assessment
     factors: QueryClarityFactors  # Detailed factor breakdown
+
+class SSEEvent(BaseModel):
+    """SSE event structure."""
+    type: str
+    data: dict[str, Any]
 
