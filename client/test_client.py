@@ -16,8 +16,9 @@ PUBLIC_AGENT_CARD_PATH = "/.well-known/agent-card.json"
 BASE_URL = "http://bloo-agent:8080"
 
 
-async def main(base_url: str=BASE_URL, public_agent_card_path: str=PUBLIC_AGENT_CARD_PATH) -> None:
-    async with httpx.AsyncClient() as httpx_client:
+async def main(query: str, base_url: str=BASE_URL, public_agent_card_path: str=PUBLIC_AGENT_CARD_PATH) -> None:
+    timeout = httpx.Timeout(300.0, connect=30.0)
+    async with httpx.AsyncClient(timeout=timeout) as httpx_client:
         # Initialize A2ACardResolver
         resolver = A2ACardResolver(
             httpx_client=httpx_client,
@@ -48,7 +49,7 @@ async def main(base_url: str=BASE_URL, public_agent_card_path: str=PUBLIC_AGENT_
         message_payload = Message(
             role=Role.user,
             messageId=str(uuid.uuid4()),
-            parts=[Part(root=TextPart(text="Write a DQL query for brute force attack"))],
+            parts=[Part(root=TextPart(text=query))],
         )
         request = SendMessageRequest(
             id=str(uuid.uuid4()),

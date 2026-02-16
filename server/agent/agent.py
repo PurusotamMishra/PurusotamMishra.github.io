@@ -3,21 +3,20 @@ import sys
 sys.path.append("/app/server")
 from tools.tools import fetch_logs
 
-def create_agent() -> LlmAgent:
-    """Constructs the ADK agent for BLOO Agent."""
-    agent = LlmAgent(
-        model="gemini-2.5-flash",
-        name="BLOO_Agent",
-        instruction="""
-            **Role:** You are BLOO Agent's personal assistant. 
-            Your sole responsibility is to fetch logs from the database based on the user's request.
-            *Execute the following steps in order:*
-            *    **Fetch Logs:** Use the `fetch_logs` tool to fetch logs from the database based on the user's request.
-                        This tool requires the `user_query` (string format) parameter to be passed in which is the prompt passed by the user.   
-            """,
-        tools=[fetch_logs]
-
-        )
+# def create_agent() -> LlmAgent:
+#     """Constructs the ADK agent for BLOO Agent."""
+#     agent = LlmAgent(
+#         model="gemini-2.5-flash",
+#         name="BLOO_Agent",
+#         instruction="""
+#             **Role:** You are BLOO Agent's personal assistant. 
+#             Your sole responsibility is to fetch logs from the database based on the user's request.
+#             *Execute the following steps in order:*
+#             *    **Fetch Logs:** Use the `fetch_logs` tool to fetch logs from the database based on the user's request.
+#                         This tool requires the `user_query` (string format) parameter to be passed in which is the prompt passed by the user.   
+#             """,
+#         tools=[fetch_logs]
+        # )
 
     #         **Execute the following steps in order:**
     #         *    **Guardrail Check:** Use the `guardrail_check_tool` tool to check if the user's request is safe and compliant.
@@ -32,7 +31,7 @@ def create_agent() -> LlmAgent:
     #     tools=[guardrail_check_tool, classification_tool, query_clarity_tool, entity_resolution_tool, stream_action_context_tool, human_to_dql_tool, sql_to_dql_tool, query_execution_tool],
     # )
 
-    return agent
+    # return agent
 
 # from google.adk.agents import BaseAgent
 
@@ -54,3 +53,21 @@ def create_agent() -> LlmAgent:
 #                 )
 #         except Exception as e:
 #             raise e
+
+
+from a2a.server.agent_execution import AgentExecutor
+from a2a.server.agent_execution.context import RequestContext
+from a2a.server.events.event_queue import EventQueue
+from a2a.utils import new_agent_text_message
+from pydantic import BaseModel
+
+import sys
+sys.path.append("/app/server")
+from tools.tools import fetch_logs
+
+
+class BLOOAgent(BaseModel):
+    """Greeting agent that returns a greeting"""
+
+    async def invoke(self, input: str) -> str:
+        return await fetch_logs(input)

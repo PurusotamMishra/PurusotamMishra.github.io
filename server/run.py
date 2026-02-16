@@ -1,6 +1,6 @@
 import logging
 import os
-
+import httpx
 import uvicorn
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
@@ -13,12 +13,8 @@ from a2a.types import (
 import sys  
 sys.path.append("/app/server")
 # from agent.agent import FetchLogsAgent
-from agent.agent import create_agent
+# from agent.agent import create_agent
 from agent.agent_executer import BLOOAgentExecutor
-from google.adk.artifacts import InMemoryArtifactService
-from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -64,20 +60,23 @@ def main():
         )
 
         # adk_agent = FetchLogsAgent()
-        adk_agent = create_agent()
+        # adk_agent = create_agent()
         
-        runner = Runner(
-            app_name=agent_card.name,
-            agent=adk_agent,
-            artifact_service=InMemoryArtifactService(),
-            session_service=InMemorySessionService(),
-            memory_service=InMemoryMemoryService(),
-        )
-        agent_executor = BLOOAgentExecutor(runner)
+        # runner = Runner(
+        #     app_name=agent_card.name,
+        #     agent=BLOOAgent(),
+        #     artifact_service=InMemoryArtifactService(),
+        #     session_service=InMemorySessionService(),
+        #     memory_service=InMemoryMemoryService(),
+        # )
+        agent_executor = BLOOAgentExecutor()
+
+        # httpx_client = httpx.AsyncClient()
 
         request_handler = DefaultRequestHandler(
             agent_executor=agent_executor,
             task_store=InMemoryTaskStore(),
+            # push_notifier=InMemoryPushNotifier(httpx_client),
         )
         server = A2AStarletteApplication(
             agent_card=agent_card, http_handler=request_handler

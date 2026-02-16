@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile.server
     image: bloo-agent
     container_name: bloo-agent
+    volumes:
+      - ./server:/app/server
     env_file:
       - .env
     ports:

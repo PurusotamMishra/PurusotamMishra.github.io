@@ -174,6 +174,7 @@ async def stream_workflow_events(
                         )
                         results.append(query_result_event.model_dump_json())
                         # streamed_query_indices.add(query_idx)
+                print(f"[DEBUG]************************************************** results: {results}")
                 return results
             
             # Stream EPM query results when epm_query_execution node completes

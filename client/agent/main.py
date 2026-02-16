@@ -85,7 +85,8 @@ async def chat(req: ChatRequest):
 @app.post("/test-client", response_model=ChatResponse)
 async def send_message(req: ChatRequest):
     session_id = req.session_id or str(uuid.uuid4())
-    response = await main(base_url="http://bloo-agent:8080", public_agent_card_path="/.well-known/agent-card.json")
+    query = req.query
+    response = await main(query=query, base_url="http://bloo-agent:8080", public_agent_card_path="/.well-known/agent-card.json")
 
     return ChatResponse(
         session_id=session_id,
