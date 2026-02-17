@@ -2,6 +2,7 @@ from fastmcp import FastMCP
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
 from starlette.responses import JSONResponse
+import logging
 
 from core.workflows.fetch_logs import fetch_logs
 
@@ -20,16 +21,20 @@ def ping() -> str:
 
 
 @mcp.tool(name="query-execute")
-async def query_execute(query: str) -> str:
+async def query_execute(query: str) -> JSONResponse:
     """Execute query"""
-    result = await fetch_logs(query)
-    return {
-        "type": "query_result",
-        "data": result,
-        "status": "success",
-        "message": "Query executed successfully"
-    }
-
+    try:
+        result = await fetch_logs(query)
+        return JSONResponse(
+            status_code=200,
+            content={"status": "success", "message": "Query executed successfully", "data": result}
+        )
+    except Exception as e:
+        logging.error(f"Error executing query: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"status": "error", "message": f"Error executing query: {e}"}
+        )
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request: Request) -> JSONResponse:

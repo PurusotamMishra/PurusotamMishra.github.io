@@ -12,6 +12,8 @@ services:
       - .env
     ports:
       - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
     restart: unless-stopped
     networks:
       - agent-network
@@ -33,7 +35,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8081:80"
+      - "8083:80"
     restart: unless-stopped
     depends_on:
       - bloo-agent

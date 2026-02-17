@@ -22,7 +22,7 @@ from a2a.types import (
 import sys
 sys.path.append("/app/server")
 
-from interfaces.a2a.services.agent import BLOOAgent
+from interfaces.a2a.src.agent import BLOOAgent
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

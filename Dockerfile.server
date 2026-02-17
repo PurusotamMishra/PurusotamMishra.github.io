@@ -6,8 +6,8 @@ ENV CONTAINER_TIMEZONE=UTC
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /app
-ENV WORKDIR=/app
+WORKDIR /app/server
+ENV WORKDIR=/app/server
 # Install system dependencies and Python
 RUN apt-get clean && \
     apt-get update --fix-missing && \
@@ -23,10 +23,10 @@ RUN pip3 install --upgrade pip
 RUN mkdir /app/logs
 
 # Copy setup files
-COPY server/setup/init.sh /opt/init.sh
 COPY server/setup/requirements.txt /opt/requirements.txt
-
 RUN pip3 install --no-cache-dir -r /opt/requirements.txt
+
+COPY server/setup/init.sh /opt/init.sh
 
 # Moving common directories
 COPY server /app/server

@@ -1,10 +1,10 @@
 #!/bin/bash
 echo "Starting init.sh"
 
-servers=("a2a" "api" "mcp")
+interfaces=("a2a" "api" "mcp")
 
-for server in "${servers[@]}"; do
-  python3 -m server.interfaces.$server.run &
+for interface in "${interfaces[@]}"; do
+  python3 -m interfaces.$interface.run &
 done
 
 wait

@@ -14,7 +14,7 @@ import sys
 sys.path.append("/app/server")
 # from agent.agent import FetchLogsAgent
 # from agent.agent import create_agent
-from interfaces.a2a.services.agent_executer import BLOOAgentExecutor
+from interfaces.a2a.src.agent_executer import BLOOAgentExecutor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class MissingAPIKeyError(Exception):
 def main():
     """Starts the agent server."""
     HOST_DOMAIN = "bloo-agent"
-    HOST_PORT = os.getenv("PORT_A2A")
+    HOST_PORT = int(os.getenv("PORT_A2A", "8080"))
     print(f"HOST_PORT: {HOST_PORT}")
     try:
         # Check for API key only if Vertex AI is not configured
