@@ -1,8 +1,12 @@
 from typing import Dict, Any, AsyncGenerator, Optional
-from tools.schemas.models import WorkflowInput
-from tools.schemas.state import WorkflowState
-from tools.utils.config import generate_workflow_id, TRACE_SOURCE
-from tools.graph import workflow_app
+
+import sys
+sys.path.append("/app/server")
+
+from schemas.models import WorkflowInput
+from schemas.state import WorkflowState
+from utils.config import generate_workflow_id, TRACE_SOURCE
+from core.graph import workflow_app
 
 async def stream_workflow(
     workflow_input: WorkflowInput,

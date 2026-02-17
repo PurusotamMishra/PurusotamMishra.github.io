@@ -4,9 +4,6 @@ Supports OpenAI, Anthropic, and Google providers.
 """
 from typing import Optional, Any
 from functools import lru_cache
-import sys
-sys.path.append("/app/server")
-from tools.utils.models_config import get_model_config, validate_api_keys, MODEL_NAME_MAP
 
 # Lazy imports to avoid errors if packages aren't installed
 try:
@@ -23,6 +20,12 @@ try:
     from langchain_google_genai import ChatGoogleGenerativeAI
 except ImportError:
     ChatGoogleGenerativeAI = None
+
+import sys
+sys.path.append("/app/server")
+
+from utils.models_config import get_model_config, validate_api_keys, MODEL_NAME_MAP
+
 
 
 @lru_cache(maxsize=32)

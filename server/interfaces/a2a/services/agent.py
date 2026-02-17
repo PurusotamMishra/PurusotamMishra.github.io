@@ -1,7 +1,21 @@
-from google.adk.agents import LlmAgent
+from pydantic import BaseModel
+from typing import Any
+from typing import AsyncGenerator
+
 import sys
 sys.path.append("/app/server")
-from tools.tools import fetch_logs
+
+from core.workflows.fetch_logs import fetch_logs
+
+class BLOOAgent(BaseModel):
+    """Greeting agent that returns a greeting"""
+
+    async def ainvoke(self, input: str) -> Any:
+        return await fetch_logs(input)
+
+    async def astream(self, input: str) -> AsyncGenerator[Any, None]:
+        async for item in fetch_logs(input):
+            yield item
 
 # def create_agent() -> LlmAgent:
 #     """Constructs the ADK agent for BLOO Agent."""
@@ -53,21 +67,3 @@ from tools.tools import fetch_logs
 #                 )
 #         except Exception as e:
 #             raise e
-
-
-from a2a.server.agent_execution import AgentExecutor
-from a2a.server.agent_execution.context import RequestContext
-from a2a.server.events.event_queue import EventQueue
-from a2a.utils import new_agent_text_message
-from pydantic import BaseModel
-
-import sys
-sys.path.append("/app/server")
-from tools.tools import fetch_logs
-
-
-class BLOOAgent(BaseModel):
-    """Greeting agent that returns a greeting"""
-
-    async def invoke(self, input: str) -> str:
-        return await fetch_logs(input)

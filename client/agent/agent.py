@@ -389,7 +389,7 @@ class HostAgent:
             logging.error("Received a non-success or non-task response. Cannot proceed.")
             return
 
-        response_content = send_response.root.model_dump_json(exclude_none=True)
+        response_content = send_response.model_validate_json()
         json_content = json.loads(response_content)
 
         resp = []

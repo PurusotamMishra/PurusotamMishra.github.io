@@ -61,7 +61,10 @@ async def main(query: str, base_url: str=BASE_URL, public_agent_card_path: str=P
 
         response = await client.send_message(request)
         print("Response:")
+        print(response)
+        print("**************************************************")
         print(response.model_dump_json(indent=2))
+        print("**************************************************")
         return response
 
 

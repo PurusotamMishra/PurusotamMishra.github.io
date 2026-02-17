@@ -8,8 +8,9 @@ from langchain_core.prompts import ChatPromptTemplate
 
 import sys
 sys.path.append("/app/server")
-from tools.schemas.models import QueryClarityOutput, QueryClarityFactors
-from tools.utils.model_factory import get_model
+
+from schemas.models import QueryClarityOutput, QueryClarityFactors
+from utils.model_factory import get_model
 
 
 async def assess_query_clarity(user_query: str, return_response: bool = False) -> QueryClarityOutput | tuple[QueryClarityOutput, Any]:

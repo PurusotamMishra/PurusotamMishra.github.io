@@ -4,7 +4,7 @@ Uses ONLY OpenAI models from GPT-4.1 family for optimal speed and quality.
 """
 import os
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 # Load environment variables
 # Model name mappings for API compatibility

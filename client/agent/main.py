@@ -32,10 +32,10 @@ class ChatRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
 
-
+from typing import Any
 class ChatResponse(BaseModel):
     session_id: str
-    result: str
+    result: Any
 
 
 @asynccontextmanager
@@ -90,5 +90,5 @@ async def send_message(req: ChatRequest):
 
     return ChatResponse(
         session_id=session_id,
-        result=response.model_dump_json(indent=2, exclude_none=True),
+        result=response,
     )

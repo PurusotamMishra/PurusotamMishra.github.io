@@ -14,21 +14,21 @@ import sys
 sys.path.append("/app/server")
 # from agent.agent import FetchLogsAgent
 # from agent.agent import create_agent
-from agent.agent_executer import BLOOAgentExecutor
+from services.agent_executer import BLOOAgentExecutor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class MissingAPIKeyError(Exception):
     """Exception for missing API key."""
-
     pass
 
 
 def main():
     """Starts the agent server."""
     HOST_DOMAIN = "bloo-agent"
-    HOST_PORT = 8080
+    HOST_PORT = os.getenv("PORT_A2A")
+    print(f"HOST_PORT: {HOST_PORT}")
     try:
         # Check for API key only if Vertex AI is not configured
         if not os.getenv("GOOGLE_GENAI_USE_VERTEXAI") == "TRUE": # TODO: Replace with the correct environment variable

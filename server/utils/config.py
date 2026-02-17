@@ -10,7 +10,7 @@ from pathlib import Path
 import sys
 sys.path.append("/app/server")
 
-from tools.utils.models_config import validate_api_keys
+from utils.models_config import validate_api_keys
 
 # Load environment variables
 # Trace configuration

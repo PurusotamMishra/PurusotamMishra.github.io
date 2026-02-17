@@ -2,10 +2,13 @@
 LangGraph workflow graph construction and routing.
 """
 from langgraph.graph import StateGraph, END
-from tools.schemas.state import WorkflowState
-import tools.nodes as nodes
 from langgraph.checkpoint.memory import MemorySaver
 
+import sys
+sys.path.append("/app/server")
+
+from schemas.state import WorkflowState
+import core.nodes as nodes
 
 def route_after_guardrail(state: WorkflowState) -> str:
     """

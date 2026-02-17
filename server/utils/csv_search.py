@@ -13,7 +13,7 @@ from typing import Optional
 import sys
 sys.path.append("/app/server")
 
-import tools.utils.config as config_module
+import utils.config as config_module
 
 config = config_module.config
 

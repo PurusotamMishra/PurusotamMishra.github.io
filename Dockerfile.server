@@ -30,4 +30,4 @@ RUN pip3 install --no-cache-dir -r /opt/requirements.txt
 # Moving common directories
 COPY server /app/server
 
-ENTRYPOINT ["python3", "/app/server/run.py"]
+ENTRYPOINT ["python3", "/app/server/interfaces/a2a/run.py"]

@@ -16,7 +16,7 @@ from langchain_core.prompts import ChatPromptTemplate
 import sys
 sys.path.append("/app/server")
 
-from tools.utils.entity_extraction import (
+from utils.entity_extraction import (
     extract_entities_from_results,
     extract_entities_from_queries,
     detect_aggregated_query,
@@ -24,28 +24,28 @@ from tools.utils.entity_extraction import (
     modify_query_to_fetch_entities
 )
 
-from tools.utils.helpers import (
+from utils.helpers import (
     parse_query_response,
     is_likely_follow_up,
     extract_key_answer,
     generate_one_line_summary,
 )
 
-from tools.utils.dnif_client import execute_query_with_external_polling
+from utils.dnif_client import execute_query_with_external_polling
 
-from tools.utils.config import config
-from tools.utils.knowledge_base import BASE_DQL
-from tools.utils.csv_search import search_dql_csv
-from tools.utils.query_modification import modify_dql_query
-from tools.utils.tracing import ExecutionMetrics, extract_metrics_from_langchain_response
-from tools.utils.model_factory import get_model, get_model_name
+from utils.config import config
+from utils.knowledge_base import BASE_DQL
+from utils.csv_search import search_dql_csv
+from utils.query_modification import modify_dql_query
+from utils.tracing import ExecutionMetrics, extract_metrics_from_langchain_response
+from utils.model_factory import get_model, get_model_name
 
-from tools.schemas.state import WorkflowState
+from schemas.state import WorkflowState
 
-from tools.utils.guardrails import check_jailbreak
-from tools.schemas.models import EnhancedClassificationOutput, EntityResolutionOutput
-from tools.utils.query_clarity_scorer import assess_query_clarity
-from tools.utils.query_generation_helper import format_stream_action_context
+from utils.guardrails import check_jailbreak
+from schemas.models import EnhancedClassificationOutput, EntityResolutionOutput
+from utils.query_clarity_scorer import assess_query_clarity
+from utils.query_generation_helper import format_stream_action_context
 
 
 async def guardrail_check_node(state: WorkflowState) -> Dict[str, Any]:

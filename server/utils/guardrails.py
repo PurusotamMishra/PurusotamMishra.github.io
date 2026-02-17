@@ -7,8 +7,8 @@ from langchain_core.prompts import ChatPromptTemplate
 import sys
 sys.path.append("/app/server")
 
-from tools.schemas.models import JailbreakCheckOutput
-from tools.utils.model_factory import get_model
+from schemas.models import JailbreakCheckOutput
+from utils.model_factory import get_model
 
 
 async def check_jailbreak(user_query: str) -> JailbreakCheckOutput:
