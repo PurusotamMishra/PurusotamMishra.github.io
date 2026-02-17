@@ -3,8 +3,12 @@ google-adk
 uvicorn
 pydantic
 pydantic-settings
+pydantic_core
+fastapi
+requests
 openai
 mcp
+fastmcp
 mitreattack-python
 langchain
 langchain-openai

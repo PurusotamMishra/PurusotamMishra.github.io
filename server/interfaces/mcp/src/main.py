@@ -1,13 +1,15 @@
 from fastmcp import FastMCP
-from core.config import settings
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse
+from starlette.responses import JSONResponse
+
+from core.workflows.fetch_logs import fetch_logs
 
 
 # For now, create MCP without auth - auth can be added via middleware later
 # FastMCP's auth parameter requires specific auth provider objects
 mcp = FastMCP(
-    name=settings.APP_NAME,
+    name="Bloo MCP Server",
 )
 
 
@@ -18,14 +20,23 @@ def ping() -> str:
 
 
 @mcp.tool(name="query-execute")
-def query_execute(query: str) -> str:
+async def query_execute(query: str) -> str:
     """Execute query"""
-    return f"Query executing {query} is done"
+    result = await fetch_logs(query)
+    return {
+        "type": "query_result",
+        "data": result,
+        "status": "success",
+        "message": "Query executed successfully"
+    }
 
 
 @mcp.custom_route("/health", methods=["GET"])
-async def health_check(request: Request) -> PlainTextResponse:
+async def health_check(request: Request) -> JSONResponse:
     """
     Health check endpoint (unauthenticated)
     """
-    return PlainTextResponse("MCP server is running")
+    return JSONResponse(
+        status_code=200,
+        content={"status": "healthy", "message": "MCP server is running"}
+    )

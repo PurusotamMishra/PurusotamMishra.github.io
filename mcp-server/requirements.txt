@@ -1,6 +1,0 @@
-uvicorn
-pydantic
-pydantic_settings
-
-mcp
-fastmcp

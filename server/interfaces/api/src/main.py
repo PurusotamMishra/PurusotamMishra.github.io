@@ -3,9 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 import logging
+import os
 
-from core.config import settings
-from src.schemas import QueryRequest
+from interfaces.api.src.schemas import QueryRequest
+from core.workflows.fetch_logs import fetch_logs
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -15,13 +16,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     root_path="/bloo-agent-api",
-    title=settings.APP_NAME,
+    title="Bloo Agent API",
     description="Bloo Agent API",
-    debug=settings.DEBUG,
+    debug=os.getenv('DEBUG', 'FALSE').lower() == 'true',
     lifespan=lifespan,
-    docs_url="/docs" if settings.APP_ENV == "development" else None,
-    redoc_url="/redoc" if settings.APP_ENV == "development" else None,
-    openapi_url="/openapi.json" if settings.APP_ENV == "development" else None
+    docs_url="/docs" if os.getenv('APP_ENV', 'development').lower() == 'development' else None, 
+    redoc_url="/redoc" if os.getenv('APP_ENV', 'development').lower() == 'development' else None,
+    openapi_url="/openapi.json" if os.getenv('APP_ENV', 'development').lower() == 'development' else None
 )
 
 app.add_middleware(
@@ -46,10 +47,13 @@ async def query_endpoint(request: QueryRequest):
     
     Returns Server-Sent Events stream with incremental results.
     """
-    return JSONResponse(
-        status_code=200,
-        content={"status": "query executed"}
-    )
+    result = await fetch_logs(request.query)
+    return {
+        "type": "query_result",
+        "data": result,
+        "status": "success",
+        "message": "Query executed successfully"
+    }
     # return StreamingResponse(
     #     stream_workflow_events(request.query, request.conversation_id),
     #     media_type="text/event-stream",
