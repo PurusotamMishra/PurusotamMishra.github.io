@@ -23,6 +23,7 @@ RUN pip3 install --upgrade pip
 RUN mkdir /app/logs
 
 # Copy setup files
+COPY server/setup/init.sh /opt/init.sh
 COPY server/setup/requirements.txt /opt/requirements.txt
 
 RUN pip3 install --no-cache-dir -r /opt/requirements.txt
@@ -30,4 +31,4 @@ RUN pip3 install --no-cache-dir -r /opt/requirements.txt
 # Moving common directories
 COPY server /app/server
 
-ENTRYPOINT ["python3", "/app/server/interfaces/a2a/run.py"]
+ENTRYPOINT ["bash","/opt/init.sh"]

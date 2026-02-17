@@ -14,7 +14,7 @@ import sys
 sys.path.append("/app/server")
 # from agent.agent import FetchLogsAgent
 # from agent.agent import create_agent
-from services.agent_executer import BLOOAgentExecutor
+from interfaces.a2a.services.agent_executer import BLOOAgentExecutor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -1,0 +1,1 @@
+print("MCP server is running")
