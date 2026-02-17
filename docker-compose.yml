@@ -39,6 +39,19 @@ services:
       - bloo-agent
     networks:
       - agent-network
+    
+  bloo-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    container_name: bloo-mcp-server
+    ports:
+      - "8000:80"
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - agent-network
 
 networks:
   agent-network:
