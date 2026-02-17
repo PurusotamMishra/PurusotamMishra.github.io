@@ -1,6 +1,6 @@
 uvicorn
 pydantic
 pydantic_settings
-
-mcp
-fastmcp
+fastapi
+pydantic_core
+requests
