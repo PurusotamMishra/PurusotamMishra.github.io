@@ -11,7 +11,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { apiQuery, sendMessageToClient, type DataResponse } from "./service";
+import { apiQuery, sendMessageToMcpClient, sendMessageToA2AClient, type DataResponse } from "./service";
 
 interface Message {
 	id: string;
@@ -53,7 +53,7 @@ export function AgentInterface() {
 
 		try {
 			if (selectedOption === "a2a") {
-				const response = await sendMessageToClient(input, "a2a");
+				const response = await sendMessageToA2AClient(input);
 				const assistantMessage: Message = {
 					id: crypto.randomUUID(),
 					role: "assistant",
@@ -61,7 +61,7 @@ export function AgentInterface() {
 				};
 				setMessages((prev) => [...prev, assistantMessage]);
 			} else if (selectedOption === "mcp") {
-				const response = await sendMessageToClient(input, "mcp");
+				const response = await sendMessageToMcpClient(input);
 				const assistantMessage: Message = {
 					id: crypto.randomUUID(),
 					role: "assistant",
