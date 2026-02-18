@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import logging
 from agent.agent import HostAgent
 from test_client import main
-
+from fastapi.middleware.cors import CORSMiddleware
 
 def _parse_external_agent_urls(raw: str | None) -> List[str]:
     if not raw:
@@ -61,6 +61,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Client Host Agent", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For development only
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/health")
 async def health():
@@ -82,13 +90,65 @@ async def chat(req: ChatRequest):
 
     return ChatResponse(session_id=session_id, result=final_text)
     
-@app.post("/test-client", response_model=ChatResponse)
+@app.post("/test-client")
 async def send_message(req: ChatRequest):
     session_id = req.session_id or str(uuid.uuid4())
     query = req.query
-    response = await main(query=query, base_url="http://bloo-agent:8080", public_agent_card_path="/.well-known/agent-card.json")
+    try:
+        response = await main(query=query, base_url="http://bloo-agent:8080", public_agent_card_path="/.well-known/agent-card.json")
+        logging.error(f"respons-test-client: {response}")
+        
+        return {
+            "type": "query_result",
+            "data": response,
+            "status": "success",
+            "message": "Query executed successfully"
+        }
+    except Exception as e:
+        logging.error(f"Error executing query: {e}")
+        return {
+            "type": "query_result",
+            "data": "",
+            "status": "error",
+            "message": f"Error executing query: {e}"
+        }
 
-    return ChatResponse(
-        session_id=session_id,
-        result=response,
-    )
+from fastmcp import Client
+import json
+
+client = Client("http://bloo-agent:8081/sse")
+
+@app.post("/mcp/query")
+async def mcp_query(req: ChatRequest):
+    session_id = req.session_id or str(uuid.uuid4())
+    
+    try:
+        async with client:
+            result = await client.call_tool("query-execute", {"query": req.query})
+            logging.error(f"result-mcp: {result}")
+            
+            # Extract text content from CallToolResult
+            if result.content and len(result.content) > 0:
+                text_content = result.content[0].text
+                # Parse the JSON string if it's a string
+                try:
+                    data = json.loads(text_content)
+                except (json.JSONDecodeError, TypeError):
+                    data = text_content
+            else:
+                data = None
+            
+            return {
+                "type": "query_result",
+                "data": data,
+                "status": "success",
+                "message": "Query executed successfully"
+            }
+    except Exception as e:
+        logging.error(f"Error executing query: {e}")
+        return {
+            "type": "query_result",
+            "data": "",
+            "status": "error",
+            "message": f"Error executing query: {e}"
+        }
