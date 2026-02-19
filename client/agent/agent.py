@@ -124,7 +124,15 @@ class HostAgent:
         )
 
     async def _async_init_components(self, remote_agent_addresses: List[str]):
-        async with httpx.AsyncClient(timeout=30) as client:
+        # Get token from environment
+        public_token = os.getenv('PUBLIC_TOKEN', '')
+        
+        # Configure httpx client with authentication headers
+        headers = {}
+        if public_token:
+            headers["Authorization"] = f"Bearer {public_token}"
+        
+        async with httpx.AsyncClient(timeout=30, headers=headers) as client:
             for address in remote_agent_addresses:
                 card_resolver = A2ACardResolver(client, base_url=address)
                 try:

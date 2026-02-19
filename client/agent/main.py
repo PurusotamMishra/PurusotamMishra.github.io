@@ -114,9 +114,12 @@ async def send_message(req: ChatRequest):
         }
 
 from fastmcp import Client
+from fastmcp.client.auth import BearerAuth
 import json
 
-client = Client("http://bloo-agent:8081/sse")
+public_token = os.getenv('PUBLIC_TOKEN', '')
+
+client = Client("http://bloo-agent:8081/sse", auth=BearerAuth(token=public_token))
 
 @app.post("/mcp/query")
 async def mcp_query(req: ChatRequest):

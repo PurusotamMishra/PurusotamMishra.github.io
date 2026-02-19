@@ -1,4 +1,5 @@
 import uuid
+import os
 
 import httpx
 from a2a.client import A2ACardResolver, A2AClient
@@ -17,8 +18,15 @@ BASE_URL = "http://bloo-agent:8080"
 
 
 async def main(query: str, base_url: str=BASE_URL, public_agent_card_path: str=PUBLIC_AGENT_CARD_PATH) -> None:
+    # Get token from environment
+    public_token = os.getenv('PUBLIC_TOKEN', '')
+    
+    # Configure httpx client with authentication headers
+    headers = {}
+    if public_token:
+        headers["Authorization"] = f"Bearer {public_token}"
     timeout = httpx.Timeout(300.0, connect=30.0)
-    async with httpx.AsyncClient(timeout=timeout) as httpx_client:
+    async with httpx.AsyncClient(timeout=timeout, headers=headers) as httpx_client:
         # Initialize A2ACardResolver
         resolver = A2ACardResolver(
             httpx_client=httpx_client,

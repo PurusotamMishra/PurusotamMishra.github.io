@@ -13,6 +13,7 @@ from a2a.types import (
 # from agent.agent import FetchLogsAgent
 # from agent.agent import create_agent
 from interfaces.a2a.src.agent_executer import BLOOAgentExecutor
+from interfaces.a2a.auth.auth_middleware import TokenAuthMiddleware
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -79,8 +80,11 @@ def main():
         server = A2AStarletteApplication(
             agent_card=agent_card, http_handler=request_handler
         )
+        
+        app = server.build()
+        app.add_middleware(TokenAuthMiddleware) 
 
-        uvicorn.run(server.build(), host="0.0.0.0", port=HOST_PORT)
+        uvicorn.run(app, host="0.0.0.0", port=HOST_PORT)
     except MissingAPIKeyError as e:
         logger.error(f"Error: {e}")
         exit(1)

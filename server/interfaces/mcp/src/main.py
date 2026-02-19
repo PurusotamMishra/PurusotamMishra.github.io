@@ -6,12 +6,13 @@ import logging
 
 from core.engine.executor import WorkflowExecutor
 from core.engine.registry import WorkflowRegistry
+from interfaces.mcp.auth.validator import CustomTokenVerifier
 
+token_verifier = CustomTokenVerifier()
 
-# For now, create MCP without auth - auth can be added via middleware later
-# FastMCP's auth parameter requires specific auth provider objects
 mcp = FastMCP(
     name="Bloo MCP Server",
+    auth=token_verifier
 )
 
 registry = WorkflowRegistry()

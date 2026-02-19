@@ -12,6 +12,7 @@ from a2a.types import (
 )
 from dotenv import load_dotenv
 import logging
+import os
 load_dotenv()
 
 TaskCallbackArg = Task | TaskStatusUpdateEvent | TaskArtifactUpdateEvent
@@ -24,7 +25,16 @@ class RemoteAgentConnections:
     def __init__(self, agent_card: AgentCard, agent_url: str):
         logging.error(f"agent_card: {agent_card}")
         logging.error(f"agent_url: {agent_url}")
-        self._httpx_client = httpx.AsyncClient(timeout=30)
+        
+        # Get token from environment
+        public_token = os.getenv('PUBLIC_TOKEN', '')
+        
+        # Configure httpx client with authentication headers
+        headers = {}
+        if public_token:
+            headers["Authorization"] = f"Bearer {public_token}"
+        
+        self._httpx_client = httpx.AsyncClient(timeout=30, headers=headers)
         self.agent_client = A2AClient(self._httpx_client, agent_card, url=agent_url)
         self.card = agent_card
         self.conversation_name = None
