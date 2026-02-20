@@ -50,7 +50,7 @@ async def query_endpoint(request: QueryRequest):
     
     Returns Server-Sent Events stream with incremental results.
     """
-    result = await WorkflowExecutor(registry).execute("fetch_logs", {"user_query": request.query})
+    result = await anext(WorkflowExecutor(registry).execute("fetch_logs", {"user_query": request.query}, stream=False))
     return {
         "type": "query_result",
         "data": result,

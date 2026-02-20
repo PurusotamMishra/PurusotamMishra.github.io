@@ -20,10 +20,6 @@ class WorkflowExecutor:
         workflow = self.registry.get_workflow(workflow_name)        
         workflow_cls = self.registry.workflows[workflow_name]()
         initial_state = workflow_cls.get_initial_state(input_data)
-        print("#########")
-        print(initial_state)
-        print(type(initial_state))
-        print("#########")
         
         config = {"configurable": {"thread_id": workflow_id}}
         
@@ -32,5 +28,6 @@ class WorkflowExecutor:
                 if state_update.get("response"):
                     yield state_update.get("response")
         else:
-            result = workflow.ainvoke(initial_state, config=config)
+            result = await workflow.ainvoke(initial_state, config=config)
+            print(result)
             yield result

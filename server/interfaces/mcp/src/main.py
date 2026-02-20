@@ -25,7 +25,8 @@ def ping() -> str:
 async def query_execute(query: str):
     """Execute query"""
     try:
-        result = await WorkflowExecutor(registry).execute("fetch_logs", {"user_query": query})
+        result = await anext(WorkflowExecutor(registry).execute("fetch_logs", {"user_query": query}, stream=False))
+
         logging.error(f"result-mcp-tool: {result}")
         return {
         "type": "query_result",

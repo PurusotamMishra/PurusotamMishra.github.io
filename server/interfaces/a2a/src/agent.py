@@ -10,8 +10,8 @@ class BLOOAgent(BaseModel):
     """Greeting agent that returns a greeting"""
 
     async def ainvoke(self, input: str) -> Any:
-        async for item in WorkflowExecutor(registry).execute("fetch_logs", {"user_query": input}, stream=True):
-            return item
+        result = await anext(WorkflowExecutor(registry).execute("fetch_logs", {"user_query": input}, stream=False))
+        return result
 
     async def astream(self, input: str) -> AsyncGenerator[Any, None]:
         async for item in WorkflowExecutor(registry).execute("fetch_logs", {"user_query": input}, stream=True):

@@ -21,9 +21,9 @@ class FetchLogsWorkflow(BaseWorkflow):
 
     
     def get_initial_state(self, input_data: dict) -> dict:
-        state = WorkflowState = {
+        state: WorkflowState = {
             "user_query": input_data.get("user_query", ""),
-            "original_user_query": input_data.get("user_quer", ""),
+            "original_user_query": input_data.get("user_query", ""),
             "executed_queries": input_data.get("executed_queries", []),
             "previous_queries": input_data.get("previous_queries", []),
             "previous_csv_indices": input_data.get("previous_csv_indices", []),

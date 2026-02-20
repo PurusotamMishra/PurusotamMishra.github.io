@@ -1,5 +1,7 @@
 import json
 import logging
+
+from pydantic import BaseModel
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.types import (
@@ -80,18 +82,28 @@ class BLOOAgentExecutor(AgentExecutor):
                         await updater.complete()
                         break
             else:
-                result = await self.agent.ainvoke(query)
+                # result = await self.agent.ainvoke(query)
+                result = ["disco"]
 
                 if isinstance(result, list):
                     for item in result:
+                        parts = []
+
                         if isinstance(item, dict):
-                            parts = [Part(root=DataPart(data=item.model_dump_json()))]
-                            await event_queue.enqueue_event(new_agent_parts_message(parts))
+                            parts = [Part(root=DataPart(data=item))]
+                        elif isinstance(item, BaseModel):
+                            parts = [Part(root=DataPart(data=item.json_model_dump()))]
                         else:
                             parts = [Part(root=TextPart(text=str(item)))]
+                            
+                        if parts:
                             await event_queue.enqueue_event(new_agent_parts_message(parts))
+                        
                 elif isinstance(result, dict):
-                    parts = [Part(root=DataPart(data=result.model_dump_json()))]
+                    parts = [Part(root=DataPart(data=result))]
+                    await event_queue.enqueue_event(new_agent_parts_message(parts))
+                elif isinstance(item, BaseModel):
+                    parts = [Part(root=DataPart(data=item.json_model_dump()))]
                     await event_queue.enqueue_event(new_agent_parts_message(parts))
                 else:
                     parts = [Part(root=TextPart(text=str(result)))]
