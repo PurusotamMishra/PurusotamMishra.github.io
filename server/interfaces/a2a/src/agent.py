@@ -2,19 +2,19 @@ from pydantic import BaseModel
 from typing import Any
 from typing import AsyncGenerator
 
-import sys
-sys.path.append("/app/server")
+from core.engine.executor import WorkflowExecutor
+from core.engine.registry import WorkflowRegistry
 
-from core.workflows.fetch_logs import fetch_logs
-
+registry = WorkflowRegistry()
 class BLOOAgent(BaseModel):
     """Greeting agent that returns a greeting"""
 
     async def ainvoke(self, input: str) -> Any:
-        return await fetch_logs(input)
+        async for item in WorkflowExecutor(registry).execute("fetch_logs", {"user_query": input}, stream=True):
+            return item
 
     async def astream(self, input: str) -> AsyncGenerator[Any, None]:
-        async for item in fetch_logs(input):
+        async for item in WorkflowExecutor(registry).execute("fetch_logs", {"user_query": input}, stream=True):
             yield item
 
 # def create_agent() -> LlmAgent:

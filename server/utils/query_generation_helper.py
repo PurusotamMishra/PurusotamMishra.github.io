@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 import sys
 sys.path.append("/app/server")
 
-from schemas.models import StreamActionMapperOutput
+from core.schemas.models import StreamActionMapperOutput
 from utils.model_factory import get_model
 from utils.stream_action_parser import parse_stream_action_file
 

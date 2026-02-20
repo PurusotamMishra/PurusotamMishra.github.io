@@ -19,14 +19,11 @@ from a2a.types import (
     TextPart,
     UnsupportedOperationError,
 )
-import sys
-sys.path.append("/app/server")
 
 from interfaces.a2a.src.agent import BLOOAgent
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
 
 class BLOOAgentExecutor(AgentExecutor):
     """BLOO AgentExecutor."""

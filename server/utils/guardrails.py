@@ -7,7 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 import sys
 sys.path.append("/app/server")
 
-from schemas.models import JailbreakCheckOutput
+from core.schemas.models import JailbreakCheckOutput
 from utils.model_factory import get_model
 
 

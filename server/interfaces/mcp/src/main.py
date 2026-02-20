@@ -4,7 +4,8 @@ from starlette.responses import PlainTextResponse
 from starlette.responses import JSONResponse
 import logging
 
-from core.workflows.fetch_logs import fetch_logs
+from core.engine.executor import WorkflowExecutor
+from core.engine.registry import WorkflowRegistry
 
 
 # For now, create MCP without auth - auth can be added via middleware later
@@ -13,7 +14,7 @@ mcp = FastMCP(
     name="Bloo MCP Server",
 )
 
-
+registry = WorkflowRegistry()
 @mcp.tool()
 def ping() -> str:
     """Health check and connection, returns 'pong'"""
@@ -24,7 +25,7 @@ def ping() -> str:
 async def query_execute(query: str) -> JSONResponse:
     """Execute query"""
     try:
-        result = await fetch_logs(query)
+        result = await WorkflowExecutor(registry).execute("fetch_logs", {"user_query": query})
         return JSONResponse(
             status_code=200,
             content={"status": "success", "message": "Query executed successfully", "data": result}

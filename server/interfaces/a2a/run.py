@@ -10,8 +10,6 @@ from a2a.types import (
     AgentCard,
     AgentSkill,
 )
-import sys  
-sys.path.append("/app/server")
 # from agent.agent import FetchLogsAgent
 # from agent.agent import create_agent
 from interfaces.a2a.src.agent_executer import BLOOAgentExecutor

@@ -9,7 +9,7 @@ from langchain_core.prompts import ChatPromptTemplate
 import sys
 sys.path.append("/app/server")
 
-from schemas.models import QueryClarityOutput, QueryClarityFactors
+from core.schemas.models import QueryClarityOutput, QueryClarityFactors
 from utils.model_factory import get_model
 
 

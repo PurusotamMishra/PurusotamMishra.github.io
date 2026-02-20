@@ -1,16 +1,16 @@
 from pydantic import BaseModel
 from typing import AsyncGenerator
 
-import sys
-sys.path.append("/app/server")
-
 from schemas.models import WorkflowInput, SSEEvent
 from utils.tracing import ExecutionMetrics, format_workflow_summary
 from core.workflow_generator import stream_workflow
+from clients.postgres_client import PostgresHelper
+
+pg_client = PostgresHelper()
 
 class FetchLogsWorkflow(BaseModel):
 
-    async def stream_workflow_events(self, workflow_input: WorkflowInput) -> AsyncGenerator[list[dict], None]:
+    async def stream_workflow_events(self, workflow_input: WorkflowInput) -> AsyncGenerator[dict, None, None]:
         """
         Stream workflow events as Server-Sent Events using b_copilot.run_workflow().
         
@@ -34,16 +34,7 @@ class FetchLogsWorkflow(BaseModel):
             
             # Stream workflow using incremental streaming
             print("[DEBUG] Streaming workflow with b_copilot...")
-            async for update in stream_workflow(
-                workflow_input,
-                # executed_queries=session_data.executed_queries,
-                # previous_queries=session_data.previous_queries,
-                # previous_csv_indices=session_data.previous_csv_indices,
-                # previous_execution_results=session_data.previous_execution_results,
-                # previous_query_confidence=session_data.previous_query_confidence
-            ):
-                import logging
-                logging.error(f"update: {update}")
+            async for update in stream_workflow(workflow_input):
                 node_name = update.get("node")
                 state = update.get("state", {})
                 current_state = state
@@ -58,8 +49,7 @@ class FetchLogsWorkflow(BaseModel):
                             "details": state.get('details', {})
                         }
                     )
-                    # yield f"data: {error_event.model_dump_json()}\n\n"
-                    return
+                    yield error_event.model_dump()
                 
                 # Stream classification event when classification node completes
                 if node_name == "classification" and not classification_sent:
@@ -78,7 +68,7 @@ class FetchLogsWorkflow(BaseModel):
                                 "detected_duration": state.get('detected_duration')
                             }
                         )
-                        # yield f"data: {classification_event.model_dump_json()}\n\n"
+                        yield classification_event.model_dump()
                         classification_sent = True
                 
                 # Stream metrics after each node (if enabled)

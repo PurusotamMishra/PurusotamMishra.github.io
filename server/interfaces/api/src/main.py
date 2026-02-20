@@ -6,13 +6,16 @@ import logging
 import os
 
 from interfaces.api.src.schemas import QueryRequest
-from core.workflows.fetch_logs import fetch_logs
+from core.engine.executor import WorkflowExecutor
+from core.engine.registry import WorkflowRegistry
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.info("Bloo Agent API Starting up...")
     yield
     logging.info("Bloo Agent API Shutting down...")
+
+registry = WorkflowRegistry()
 
 app = FastAPI(
     root_path="/bloo-agent-api",
@@ -47,7 +50,7 @@ async def query_endpoint(request: QueryRequest):
     
     Returns Server-Sent Events stream with incremental results.
     """
-    result = await fetch_logs(request.query)
+    result = await WorkflowExecutor(registry).execute("fetch_logs", {"user_query": request.query})
     return {
         "type": "query_result",
         "data": result,

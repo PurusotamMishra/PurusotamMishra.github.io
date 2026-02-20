@@ -13,9 +13,6 @@ from langchain_core.prompts import MessagesPlaceholder
 from langchain_core.prompts import ChatPromptTemplate
 
 
-import sys
-sys.path.append("/app/server")
-
 from utils.entity_extraction import (
     extract_entities_from_results,
     extract_entities_from_queries,
@@ -40,13 +37,12 @@ from utils.query_modification import modify_dql_query
 from utils.tracing import ExecutionMetrics, extract_metrics_from_langchain_response
 from utils.model_factory import get_model, get_model_name
 
-from schemas.state import WorkflowState
+from core.workflows.fetch_logs.state import WorkflowState
 
 from utils.guardrails import check_jailbreak
-from schemas.models import EnhancedClassificationOutput, EntityResolutionOutput
+from core.schemas.models import EnhancedClassificationOutput, EntityResolutionOutput
 from utils.query_clarity_scorer import assess_query_clarity
 from utils.query_generation_helper import format_stream_action_context
-
 
 async def guardrail_check_node(state: WorkflowState) -> Dict[str, Any]:
     """
@@ -58,6 +54,8 @@ async def guardrail_check_node(state: WorkflowState) -> Dict[str, Any]:
     Returns:
         Partial state update with guardrail results
     """
+    print(state)
+    print(type(state))
     user_query = state.get("user_query", "")
     
     print("[DEBUG] Guardrail: Checking jailbreak...")
