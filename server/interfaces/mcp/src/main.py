@@ -22,20 +22,24 @@ def ping() -> str:
 
 
 @mcp.tool(name="query-execute")
-async def query_execute(query: str) -> JSONResponse:
+async def query_execute(query: str):
     """Execute query"""
     try:
         result = await WorkflowExecutor(registry).execute("fetch_logs", {"user_query": query})
-        return JSONResponse(
-            status_code=200,
-            content={"status": "success", "message": "Query executed successfully", "data": result}
-        )
+        logging.error(f"result-mcp-tool: {result}")
+        return {
+        "type": "query_result",
+        "data": result,
+        "status": "success",
+        "message": "Query executed successfully"
+    }
     except Exception as e:
         logging.error(f"Error executing query: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={"status": "error", "message": f"Error executing query: {e}"}
-        )
+        return {
+            "type": "error",
+            "status": "error",
+            "message": f"Error executing query: {e}"
+        }
 
 @mcp.custom_route("/health", methods=["GET"])
 async def health_check(request: Request) -> JSONResponse:
