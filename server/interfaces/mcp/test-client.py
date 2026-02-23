@@ -1,21 +1,52 @@
 import asyncio
 from fastmcp import Client
-# from fastmcp.client.auth import OAuth
-from fastmcp.client.auth import BearerAuth
+from fastmcp.client.auth import OAuth
+import logging
+logging.basicConfig(level=logging.DEBUG) # This will show outgoing HTTP headers
+
+MCP_SERVER_URL = "http://localhost:8081/sse"
+
+from key_value.aio.stores.disk import DiskStore
+from key_value.aio.wrappers.encryption import FernetEncryptionWrapper
+from cryptography.fernet import Fernet
 import os
 
-token = os.getenv('PUBLIC_TOKEN', '')
-client = Client("http://localhost:8081/sse", auth=BearerAuth(token=token))
+# Create encrypted disk storage
+encrypted_storage = FernetEncryptionWrapper(
+    key_value=DiskStore(directory="~/.fastmcp/oauth-tokens"),
+    fernet=Fernet(os.environ["OAUTH_STORAGE_ENCRYPTION_KEY"])
+)
 
-async def call_tool(name: str):
+
+oauth = OAuth(
+    mcp_url=MCP_SERVER_URL,
+    # scopes=[
+    #     "openid",
+    #     "email",
+    #     "profile",
+    #     "https://www.googleapis.com/auth/userinfo.email",
+    # ],
+    token_storage=encrypted_storage
+)
+
+async def call_tools():
     try:
-        async with client:
-            result = await client.list_tools()
-            # result = await client.call_tool("ping")
-            # result = await client.call_tool("list-tools")
-            # result = await client.call_tool("query-execute", {"query":"Give me the brute force attack logs for the last 5 minutes"})
-            print(result)
-    except Exception as e:
-        print(f"Error calling tool: {e}")
+        print("calling apis")
+        async with Client(MCP_SERVER_URL, auth=oauth) as client:
+            # print(client)
+            assert await client.ping()
+            print("✅ Successfully authenticated!")
+            
+            tools = await client.list_tools()
+            print("Available tools:", tools)
 
-asyncio.run(call_tool("Ford"))
+            result = await client.call_tool("ping")
+            print("Ping:", result)
+
+            result = await client.call_tool("whoami")
+            print("Who am I:", result)
+    except Exception as e:
+        logging.error(f"Error calling tools: {e}")
+        raise e
+
+asyncio.run(call_tools())
